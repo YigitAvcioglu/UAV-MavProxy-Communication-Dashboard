@@ -1,0 +1,241 @@
+{
+  "app": {
+    "title": "Communications and Process Control Panel",
+    "refresh_ms": 750
+  },
+  "web": {
+    "host": "0.0.0.0",
+    "port": 8080
+  },
+  "stats_udp": {
+    "host": "0.0.0.0",
+    "port": 14660,
+    "stale_after_s": 4.0
+  },
+  "gcs_forward_udp": {
+    "enabled": true,
+    "host": "192.168.1.60",
+    "port": 14660,
+    "period_s": 1.0
+  },
+  "control_udp": {
+    "host": "127.0.0.1",
+    "port": 16060,
+    "timeout_s": 1.0
+  },
+  "quality": {
+    "weights": {
+      "loss": 0.4,
+      "freshness": 0.2,
+      "delay": 0.2,
+      "rate": 0.15,
+      "signal": 0.05
+    },
+    "limits": {
+      "loss_bad_pct": 25.0,
+      "stale_bad_s": 3.0,
+      "delay_bad_ms": 1000.0,
+      "rssi_good_dbm": -55.0,
+      "rssi_bad_dbm": -100.0
+    },
+    "colors": {
+      "green_min": 75.0,
+      "yellow_min": 45.0,
+      "green": "#16a34a",
+      "yellow": "#f59e0b",
+      "red": "#dc2626",
+      "off": "#64748b",
+      "unknown": "#94a3b8"
+    }
+  },
+  "links": [
+    {
+      "id": "Ubiquiti",
+      "display_name": "Ubiquiti",
+      "mavproxy_label": "Ubiquiti",
+      "descriptor": "udp:0.0.0.0:15001:{\"label\":\"Ubiquiti\"}",
+      "baud": null,
+      "aliases": [
+        "UBIQUITI",
+        "15001"
+      ]
+    },
+    {
+      "id": "RFD900x",
+      "display_name": "RFD900x",
+      "mavproxy_label": "RFD900x",
+      "descriptor": "/dev/serial/by-id/usb-FTDI_FT232R_USB_UART_A10JYH2S-if00-port0:{\"label\":\"RFD900x\"}",
+      "baud": 57600,
+      "aliases": [
+        "RFD",
+        "RFD900",
+        "FTDI"
+      ]
+    },
+    {
+      "id": "4G",
+      "display_name": "4G",
+      "mavproxy_label": "4G",
+      "descriptor": "udp:0.0.0.0:15002:{\"label\":\"4G\"}",
+      "baud": null,
+      "aliases": [
+        "15002",
+        "4G_dongle"
+      ]
+    },
+    {
+      "id": "CUAV_P8",
+      "display_name": "CUAV P8",
+      "mavproxy_label": "CUAV_P8",
+      "descriptor": "/dev/serial/by-id/REPLACE_WITH_CUAV_P8_DEVICE:{\"label\":\"CUAV_P8\"}",
+      "baud": 57600,
+      "aliases": [
+        "P8",
+        "CUAV P8",
+        "CUAV_P8",
+        "CUAV"
+      ]
+    },
+    {
+      "id": "ELRS",
+      "display_name": "ELRS",
+      "mavproxy_label": "ELRS",
+      "descriptor": "udp:0.0.0.0:10000:{\"label\":\"ELRS\"}",
+      "baud": null,
+      "aliases": [
+        "10000",
+        "ExpressLRS"
+      ]
+    }
+  ],
+  "network_checks": {
+    "timeout_s": 1.0,
+    "devices": [
+      {
+        "id": "gcs_pc",
+        "name": "GCS Computer",
+        "host": "192.168.1.66",
+        "enabled": true
+      },
+      {
+        "id": "server",
+        "name": "Server",
+        "host": "192.168.1.50",
+        "enabled": true
+      },
+      {
+        "id": "tracker",
+        "name": "Tracker",
+        "host": "192.168.1.22",
+        "enabled": true
+      },
+      {
+        "id": "uav_rocket",
+        "name": "UAV Rocket",
+        "host": "192.168.1.23",
+        "enabled": true
+      },
+      {
+        "id": "jetson",
+        "name": "Jetson Orin NX",
+        "host": "192.168.1.12",
+        "enabled": true
+      },
+      {
+        "id": "mavproxy_pc",
+        "name": "MAVProxy Computer",
+        "host": "192.168.1.80",
+        "enabled": true
+      },
+      {
+        "id": "dev_ms6gq2p4_1wf6cn",
+        "name": "Backup GCS Computer",
+        "host": "192.168.1.45",
+        "enabled": true
+      }
+    ]
+  },
+  "processes": {
+    "mavproxy": {
+      "command": "mavproxy.py \\\n  --master='udp:0.0.0.0:15001:{\"label\":\"Ubiquiti\"}' \\\n  --master='udp:0.0.0.0:15002:{\"label\":\"4G\"}' \\\n  --master='/dev/serial/by-id/usb-FTDI_FT232R_USB_UART_A10JYH2S-if00-port0:{\"label\":\"RFD900x\"}' \\\n  --baudrate=57600 \\\n  --out=udp:192.168.1.60:14570 \\\n  --out=udp:192.168.1.45:14570 \\\n  --aircraft=AIRCRAFT \\\n  --load-module=linkstats,linkcontrol,linkwatch",
+      "cwd": "",
+      "auto_start": false
+    },
+    "mavlink_router": {
+      "command": "mavlink-routerd -c /etc/mavlink-router/main.conf",
+      "cwd": "",
+      "auto_start": false
+    }
+  },
+  "mavproxy_builder": {
+    "aircraft": "AIRCRAFT",
+    "baudrate": 57600,
+    "extra_args": "--load-module=linkstats,linkcontrol,linkwatch",
+    "masters": [
+      {
+        "enabled": true,
+        "type": "udp",
+        "label": "Ubiquiti",
+        "host": "0.0.0.0",
+        "port": 15001,
+        "path": "",
+        "baud": 57600
+      },
+      {
+        "enabled": true,
+        "type": "udp",
+        "label": "4G",
+        "host": "0.0.0.0",
+        "port": 15002,
+        "path": "",
+        "baud": 57600
+      },
+      {
+        "enabled": false,
+        "type": "udp",
+        "label": "ELRS",
+        "host": "0.0.0.0",
+        "port": 10000,
+        "path": "",
+        "baud": 57600
+      },
+      {
+        "enabled": true,
+        "type": "serial",
+        "label": "RFD900x",
+        "host": "0.0.0.0",
+        "port": 0,
+        "path": "/dev/serial/by-id/usb-FTDI_FT232R_USB_UART_A10JYH2S-if00-port0",
+        "baud": 57600
+      },
+      {
+        "enabled": false,
+        "type": "serial",
+        "label": "CUAV_P8",
+        "host": "0.0.0.0",
+        "port": 0,
+        "path": "/dev/serial/by-id/REPLACE_WITH_CUAV_P8_DEVICE",
+        "baud": 57600
+      }
+    ],
+    "outs": [
+      {
+        "enabled": true,
+        "host": "192.168.1.60",
+        "port": 14570
+      },
+      {
+        "enabled": true,
+        "host": "192.168.1.45",
+        "port": 14570
+      }
+    ]
+  },
+  "tx_selection": {
+    "mode": "auto",
+    "switch_margin_pct": 10.0,
+    "hold_s": 3.0,
+    "cooldown_s": 8.0,
+    "check_period_s": 0.5
+  }
+}

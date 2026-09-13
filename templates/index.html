@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ title }}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='dashboard.css') }}">
+</head>
+<body>
+  <main class="container">
+    <header class="topbar">
+      <div><p class="eyebrow">AIRCRAFT UAV</p><h1>{{ title }}</h1></div>
+      <div class="tx-card"><span>Command TX to UAV</span><strong id="activeTx">-</strong><small id="activeSource">-</small></div>
+    </header>
+
+    <nav class="tabs">
+      <button class="tab-button active" data-tab="linksTab">Links</button>
+      <button class="tab-button" data-tab="networkTab">Network Check</button>
+      <button class="tab-button" data-tab="mavproxyTab">MAVProxy</button>
+      <button class="tab-button" data-tab="routerTab">mavlink-router</button>
+    </nav>
+
+    <section id="linksTab" class="tab-panel active">
+      <div class="status-row"><div id="systemMessage" class="system-message">Waiting for data...</div><div id="rxUsed" class="rx-used">RX: -</div></div>
+
+      <div class="panel">
+        <div class="section-title compact-title">
+          <div><h3>GCS Link JSON Forwarding</h3><p>The target IP and port can be changed here and are applied immediately when saved.</p></div>
+          <span id="gcsForwardStatus" class="process-status">WAITING</span>
+        </div>
+        <div class="form-grid gcs-forward-grid">
+          <label class="checkbox-label"><input id="gcsForwardEnabled" type="checkbox"> Forwarding enabled</label>
+          <label>Target IP<input id="gcsForwardHost" placeholder="192.168.1.60"></label>
+          <label>UDP Port<input id="gcsForwardPort" type="number" min="1" max="65535"></label>
+          <label>Period (s)<input id="gcsForwardPeriod" type="number" min="0.2" max="3600" step="0.1"></label>
+          <div class="button-row gcs-forward-actions">
+            <button id="saveGcsForward" class="primary">Save and Apply</button>
+            <button id="testGcsForward">Send Test JSON</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel tx-mode-panel">
+        <div>
+          <h3>Command TX Selection Mode</h3>
+          <p id="txModeDetail">Waiting for mode information...</p>
+        </div>
+        <div class="button-row">
+          <button id="manualTxMode">Manual Selection Mode</button>
+          <button id="autoTxMode">Automatic Switching Mode</button>
+          <span id="txModeStatus" class="process-status">WAITING</span>
+        </div>
+      </div>
+
+      <div class="section-title"><div><h2>Communication Links</h2><p>UP/DOWN, quality, ON/OFF, and command TX selection for five links</p></div></div>
+      <div id="linkGrid" class="link-grid"></div>
+    </section>
+
+    <section id="networkTab" class="tab-panel">
+      <div class="section-title split-title">
+        <div><h2>Network Devices</h2><p>The check is performed only by pinging the configured IP addresses.</p></div>
+        <div class="button-row"><button id="scanNetwork" class="primary">Run Ping Check Now</button><button id="addDevice">Add IP / Device</button><button id="saveDevices">Save Devices</button></div>
+      </div>
+      <div id="networkMessage" class="system-message">No manual check has been run yet.</div>
+      <div class="table-wrap">
+        <table class="editable-table">
+          <thead><tr><th>Enabled</th><th>Device</th><th>IP / Host</th><th>Ping</th><th>Latency</th><th>Last Check</th><th>Device Action</th></tr></thead>
+          <tbody id="deviceRows"></tbody>
+        </table>
+      </div>
+      <p class="hint">This section checks only IP reachability. No port/protocol information is stored for network devices.</p>
+    </section>
+
+    <section id="mavproxyTab" class="tab-panel">
+      <div class="section-title"><div><h2>MAVProxy Process Control</h2><p>Raw command field and form-based master/out builder</p></div><span id="mavproxyStatus" class="process-status">DURDU</span></div>
+
+      <div class="panel">
+        <h3>1. Raw MAVProxy Command</h3>
+        <textarea id="mavproxyCommand" class="command-editor" spellcheck="false"></textarea>
+        <input id="mavproxyCwd" class="full-input" placeholder="Working directory, may be left blank">
+        <div class="button-row"><button id="saveMavproxy">Save Command</button><button id="startMavproxy" class="success">Start</button><button id="stopMavproxy" class="danger">Stop</button></div>
+      </div>
+
+      <div class="panel">
+        <h3>2. Easy Master / OUT Builder</h3>
+        <div class="form-grid three"><label>Aircraft<input id="builderAircraft"></label><label>Serial Baud<input id="builderBaud" type="number" min="1200" max="2000000"></label><label>Extra Arguments<input id="builderExtra"></label></div>
+        <div class="subsection-title"><h4>Master Inputs</h4><button id="addMaster">Add Master</button></div>
+        <div class="table-wrap"><table class="editable-table"><thead><tr><th>Enabled</th><th>Type</th><th>Label</th><th>UDP Bind IP</th><th>Port</th><th>Serial Device Path</th><th>Baud</th><th></th></tr></thead><tbody id="masterRows"></tbody></table></div>
+        <div class="subsection-title"><h4>OUT Outputs</h4><button id="addOut">Add OUT</button></div>
+        <div class="table-wrap"><table class="editable-table"><thead><tr><th>Enabled</th><th>Target IP</th><th>Port</th><th></th></tr></thead><tbody id="outRows"></tbody></table></div>
+        <div class="button-row"><button id="generateMavproxy" class="primary">Generate Command from Form, Save, and Copy to Raw Field</button></div>
+      </div>
+
+      <div class="panel console-panel">
+        <h3>MAVProxy Live Output</h3>
+        <pre id="mavproxyLog" class="terminal"></pre>
+        <div class="console-input"><input id="mavproxyInput" placeholder="MAVProxy console command: link, mode, set link 2..."><button id="sendMavproxyInput">Send to Console</button></div>
+      </div>
+    </section>
+
+    <section id="routerTab" class="tab-panel">
+      <div class="section-title"><div><h2>mavlink-router Process Control</h2><p>Edit the command, start/stop the process, and monitor its output</p></div><span id="routerStatus" class="process-status">DURDU</span></div>
+      <div class="panel">
+        <textarea id="routerCommand" class="command-editor" spellcheck="false"></textarea>
+        <input id="routerCwd" class="full-input" placeholder="Working directory, may be left blank">
+        <div class="button-row"><button id="saveRouter">Save Command</button><button id="startRouter" class="success">Start</button><button id="stopRouter" class="danger">Stop</button></div>
+      </div>
+      <div class="panel console-panel"><h3>mavlink-router Live Output</h3><pre id="routerLog" class="terminal"></pre></div>
+    </section>
+  </main>
+  <script src="{{ url_for('static', filename='dashboard.js', v='2.6.1-ping-only') }}"></script>
+</body>
+</html>
