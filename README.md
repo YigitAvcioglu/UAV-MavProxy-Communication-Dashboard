@@ -1,4 +1,6 @@
 This project is a multi-link communication monitoring and control system for UAV ground operations. It allows communication links such as Ubiquiti, RFD900x, 4G/LTE, CUAV P8, and ELRS to be monitored from a single interface by showing their current status, connection quality, and active transmission state. The system supports both manual and automatic selection of the command transmission link, while telemetry can continue to be received through multiple available links for redundancy. It can also forward summarized link information to another Ground Control Station computer in JSON format over UDP. In addition, the project includes basic network diagnostics for checking the reachability and latency of important devices using ping, as well as process management features for controlling MAVProxy-related services. The system can be accessed through both desktop and web interfaces.
+<img width="875" height="561" alt="Sytem_Diagram" src="https://github.com/user-attachments/assets/74a8a71c-d6f0-4d8f-a826-5cd50c3d5123" />
+
 
 # Link Panel
 Monitors the status and quality of all communication links in real time and allows manual or automatic selection of the active command transmission link.
